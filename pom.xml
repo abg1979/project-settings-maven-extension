@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 
   <modelVersion>4.0.0</modelVersion>
   <groupId>com.github.blackappsolutions.maven</groupId>
   <artifactId>project-settings-extension</artifactId>
-  <version>0.2.5-SNAPSHOT</version>
+  <version>0.2.5</version>
 
   <name>Extension for Loading project specific settings.xml</name>
   <description>This extension could load .mvn/settings.xml
@@ -36,6 +36,7 @@
   <scm>
     <developerConnection>scm:git:https://github.com/blackappsolutions/project-settings-maven-extension.git
     </developerConnection>
+    <tag>project-settings-extension-0.2.5</tag>
   </scm>
 
   <issueManagement>
