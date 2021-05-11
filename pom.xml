@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://mav en.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0">
 
   <modelVersion>4.0.0</modelVersion>
   <groupId>com.github.blackappsolutions.maven</groupId>
@@ -8,7 +8,8 @@
 
   <name>Extension for Loading project specific settings.xml</name>
   <description>This extension could load .mvn/settings.xml
-  as project settings, and merge it into effective setting.</description>
+    as project settings, and merge it into effective setting.
+  </description>
   <url>https://github.com/gzm55/project-settings-maven-extension</url>
 
   <licenses>
@@ -31,12 +32,10 @@
   <!-- un-comment when execute the goal: versions:display-plugin-updates
   <prerequisites><maven>${project.runtime-maven.min-version}</maven></prerequisites>
   -->
-
+  
   <scm>
-    <connection>scm:git:git://github.com/blackappsolutions/project-settings-maven-extension.git</connection>
-    <developerConnection>scm:git:git@github.com:blackappsolutions/project-settings-maven-extension.git</developerConnection>
-    <tag>HEAD</tag>
-    <url>https://github.com/blackappsolutions/project-settings-maven-extension/tree/master</url>
+    <developerConnection>scm:git:https://github.com/blackappsolutions/project-settings-maven-extension.git
+    </developerConnection>
   </scm>
 
   <issueManagement>
@@ -44,11 +43,13 @@
     <url>https://github.com/blackappsolutions/project-settings-maven-extension/issues</url>
   </issueManagement>
 
+
   <distributionManagement>
-    <snapshotRepository>
-      <id>ossrh</id>
-      <url>https://oss.sonatype.org/content/repositories/snapshots</url>
-    </snapshotRepository>
+    <repository>
+      <id>github</id>
+      <name>GitHub</name>
+      <url>https://maven.pkg.github.com/blackappsolutions/project-settings-maven-extension</url>
+    </repository>
   </distributionManagement>
 
   <properties>
@@ -71,6 +72,8 @@
     <maven.compiler.testTarget>${project.buildtime-jdk.min-version}</maven.compiler.testTarget>
 
     <sort.verifyFail>STOP</sort.verifyFail>
+
+    <project.scm.id>github</project.scm.id>
   </properties>
 
   <dependencies>
