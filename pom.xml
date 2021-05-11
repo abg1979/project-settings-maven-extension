@@ -23,6 +23,9 @@
       <name>James Z.M. Gao</name>
       <email>gaozm55@gmail.com</email>
     </developer>
+    <developer>
+      <name>Markus Schwarz</name>
+    </developer>
   </developers>
 
   <!-- un-comment when execute the goal: versions:display-plugin-updates
@@ -30,15 +33,15 @@
   -->
 
   <scm>
-    <connection>scm:git:git://github.com/gzm55/project-settings-maven-extension.git</connection>
-    <developerConnection>scm:git:git@github.com:gzm55/project-settings-maven-extension.git</developerConnection>
+    <connection>scm:git:git://github.com/blackappsolutions/project-settings-maven-extension.git</connection>
+    <developerConnection>scm:git:git@github.com:blackappsolutions/project-settings-maven-extension.git</developerConnection>
     <tag>project-settings-extension-0.2.5</tag>
-    <url>https://github.com/gzm55/project-settings-maven-extension/tree/master</url>
+    <url>https://github.com/blackappsolutions/project-settings-maven-extension/tree/master</url>
   </scm>
 
   <issueManagement>
     <system>GitHub Issues</system>
-    <url>https://github.com/gzm55/project-settings-maven-extension/issues</url>
+    <url>https://github.com/blackappsolutions/project-settings-maven-extension/issues</url>
   </issueManagement>
 
   <distributionManagement>
