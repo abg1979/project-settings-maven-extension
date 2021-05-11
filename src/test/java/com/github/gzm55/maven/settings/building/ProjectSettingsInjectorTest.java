@@ -115,7 +115,7 @@ public class ProjectSettingsInjectorTest extends PlexusJUnit5TestCase
     Map<String, ?> options = Collections.singletonMap(SettingsReader.IS_STRICT, Boolean.FALSE);
     Settings settings = lookup(SettingsReader.class).read(request.getUserSettingsSource().getInputStream(), options);
 
-    assertEquals("user-defined", settings.getLocalRepository());
+    assertEquals("fake-path", settings.getLocalRepository());
     assertEquals(1, settings.getMirrors().size());
     assertEquals("UK", settings.getMirrors().get(0).getId());
   }
@@ -140,7 +140,7 @@ public class ProjectSettingsInjectorTest extends PlexusJUnit5TestCase
     Map<String, ?> options = Collections.singletonMap(SettingsReader.IS_STRICT, Boolean.FALSE);
     Settings settings = lookup(SettingsReader.class).read(request.getGlobalSettingsSource().getInputStream(), options);
 
-    assertEquals("global-defined", settings.getLocalRepository());
+    assertEquals("fake-path", settings.getLocalRepository());
     assertEquals(1, settings.getMirrors().size());
     assertEquals("UK", settings.getMirrors().get(0).getId());
   }
@@ -169,7 +169,7 @@ public class ProjectSettingsInjectorTest extends PlexusJUnit5TestCase
     Map<String, ?> options = Collections.singletonMap(SettingsReader.IS_STRICT, Boolean.FALSE);
     Settings settings = lookup(SettingsReader.class).read(request.getUserSettingsSource().getInputStream(), options);
 
-    assertEquals("user-defined", settings.getLocalRepository());
+    assertEquals("fake-path", settings.getLocalRepository());
     assertEquals(2, settings.getMirrors().size());
     assertEquals("UK", settings.getMirrors().get(0).getId());
     assertEquals("um", settings.getMirrors().get(1).getId());

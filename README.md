@@ -34,8 +34,6 @@ This order is widely used in many projects such as git.
 
 Some fields should be controlled only by the user, not any project, so they are always ignored and copied back from user or global level settings:
 
-* localRepository
-* interactiveMode
 * offline
 * usePluginRegistry
 * proxies

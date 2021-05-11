@@ -24,8 +24,8 @@ public class ProjectSettingsMerger extends MavenSettingsMerger {
     }
 
     // Always ignore some locally used fields in project settings
-    dominant.setLocalRepository(recessive.getLocalRepository());
-    dominant.setInteractiveMode(recessive.isInteractiveMode());
+    // dominant.setLocalRepository(recessive.getLocalRepository());
+    // dominant.setInteractiveMode(recessive.isInteractiveMode());
     dominant.setUsePluginRegistry(recessive.isUsePluginRegistry());
     dominant.setOffline(recessive.isOffline());
 
