@@ -43,7 +43,6 @@
     <developerConnection>scm:git:https://github.com/blackappsolutions/project-settings-maven-extension.git
     </developerConnection>
     <url>https://github.com/blackappsolutions/project-settings-maven-extension</url>
-    <tag>HEAD</tag>
   </scm>
 
   <issueManagement>
