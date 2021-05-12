@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 
   <modelVersion>4.0.0</modelVersion>
   <groupId>com.github.blackappsolutions.maven</groupId>
@@ -10,7 +11,7 @@
   <description>This extension could load .mvn/settings.xml
     as project settings, and merge it into effective setting.
   </description>
-  <url>https://github.com/gzm55/project-settings-maven-extension</url>
+  <url>https://github.com/blackappsolutions/project-settings-maven-extension</url>
 
   <licenses>
     <license>
@@ -26,16 +27,22 @@
     </developer>
     <developer>
       <name>Markus Schwarz</name>
+      <email>open-source@black-app-solutions.de</email>
+      <organization>Black App Solutions</organization>
+      <organizationUrl>https://black-app-solutions.de</organizationUrl>
     </developer>
   </developers>
 
   <!-- un-comment when execute the goal: versions:display-plugin-updates
   <prerequisites><maven>${project.runtime-maven.min-version}</maven></prerequisites>
   -->
-  
+
   <scm>
+    <connection>scm:git:git://github.com/blackappsolutions/project-settings-maven-extension.git
+    </connection><!--the read only connection-->
     <developerConnection>scm:git:https://github.com/blackappsolutions/project-settings-maven-extension.git
     </developerConnection>
+    <url>https://github.com/blackappsolutions/project-settings-maven-extension</url>
     <tag>HEAD</tag>
   </scm>
 
@@ -46,11 +53,14 @@
 
 
   <distributionManagement>
-    <repository>
-      <id>github</id>
-      <name>GitHub</name>
-      <url>https://maven.pkg.github.com/blackappsolutions/project-settings-maven-extension</url>
-    </repository>
+    <snapshotRepository>
+       <id>ossrh</id>
+       <url>https://oss.sonatype.org/content/repositories/snapshots</url>
+      </snapshotRepository>
+      <repository>
+       <id>ossrh</id>
+       <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
+      </repository>
   </distributionManagement>
 
   <properties>
@@ -147,6 +157,10 @@
         <plugin>
           <artifactId>maven-source-plugin</artifactId>
           <version>3.2.1</version>
+        </plugin>
+        <plugin>
+          <artifactId>maven-gpg-plugin</artifactId>
+          <version>1.6</version>
         </plugin>
       </plugins>
     </pluginManagement>
@@ -293,6 +307,21 @@
                 <goals>
                   <goal>jar</goal>
                 </goals>
+              </execution>
+            </executions>
+          </plugin>
+          <plugin>
+            <artifactId>maven-gpg-plugin</artifactId>
+            <executions>
+              <execution>
+                <id>sign-artifacts</id>
+                <goals>
+                  <goal>sign</goal>
+                </goals>
+                <configuration>
+                  <keyname>71BD91AAE6DFCD61C13A5FE8BC275D607D794299</keyname>
+                  <!--keyname>59EE2BB4B60C28D8A1F247598C97571AD6B406C1</keyname-->
+                </configuration>
               </execution>
             </executions>
           </plugin>

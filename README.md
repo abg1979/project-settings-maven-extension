@@ -1,6 +1,3 @@
-[![Build Status](https://travis-ci.org/gzm55/project-settings-maven-extension.svg?branch=master)](https://travis-ci.org/gzm55/project-settings-maven-extension)
-[![Maven Central](https://img.shields.io/maven-central/v/com.github.gzm55.maven/project-settings-extension.svg)](https://search.maven.org/#search%7Cga%7C1%7Cg%3A%22com.github.gzm55.maven%22%20a%3A%22project-settings-extension%22)
-
 # project-settings-extension
 
 This maven extension could load .mvn/settings.xml as project settings, and merge it into effective setting.
@@ -15,9 +12,9 @@ Since Maven 3.3.1, we have another way to cooperate with maven, that is core ext
 <extensions xmlns="http://maven.apache.org/EXTENSIONS/1.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xsi:schemaLocation="http://maven.apache.org/EXTENSIONS/1.0.0 http://maven.apache.org/xsd/core-extensions-1.0.0.xsd">
   <extension>
-    <groupId>com.github.gzm55.maven</groupId>
+    <groupId>com.github.blackappsolutions.maven</groupId>
     <artifactId>project-settings-extension</artifactId>
-    <version>0.2.3</version>
+    <version>0.2.10</version>
   </extension>
 </extensions>
 ```
