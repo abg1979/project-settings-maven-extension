@@ -14,7 +14,7 @@ It allows the project specific use of the following tags in `settings.xml` (whic
 Hopefully soon avail. in maven repo central (request pending) under:
 ```xml
 <dependency>
-  <groupId>com.github.blackappsolutions</groupId>
+  <groupId>io.github.blackappsolutions</groupId>
   <artifactId>project-settings-extension</artifactId>
   <version>0.2.10</version>
 </dependency>
