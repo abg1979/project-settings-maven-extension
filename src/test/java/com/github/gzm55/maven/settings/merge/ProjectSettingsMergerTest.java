@@ -8,6 +8,8 @@ import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+
+import io.github.abg1979.maven.settings.building.ProjectSettingsMerger;
 import org.apache.maven.settings.Server;
 import org.apache.maven.settings.Settings;
 import org.apache.maven.settings.TrackableBase;

@@ -8,6 +8,8 @@ import java.io.File;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Properties;
+
+import io.github.abg1979.maven.settings.building.ProjectSettingsInjector;
 import org.apache.maven.eventspy.EventSpy;
 import org.apache.maven.settings.Settings;
 import org.apache.maven.settings.building.*;

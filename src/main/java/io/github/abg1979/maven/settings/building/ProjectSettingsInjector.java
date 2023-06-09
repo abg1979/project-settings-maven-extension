@@ -1,6 +1,5 @@
-package com.github.gzm55.maven.settings.building;
+package io.github.abg1979.maven.settings.building;
 
-import com.github.gzm55.maven.settings.merge.ProjectSettingsMerger;
 import java.io.File;
 import java.io.IOException;
 import java.io.StringWriter;

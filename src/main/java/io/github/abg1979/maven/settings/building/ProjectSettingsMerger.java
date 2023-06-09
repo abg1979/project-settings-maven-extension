@@ -1,4 +1,4 @@
-package com.github.gzm55.maven.settings.merge;
+package io.github.abg1979.maven.settings.building;
 
 import java.util.ArrayList;
 import java.util.HashMap;
