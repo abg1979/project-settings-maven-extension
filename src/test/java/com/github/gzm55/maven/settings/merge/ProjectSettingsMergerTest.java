@@ -34,7 +34,7 @@ public class ProjectSettingsMergerTest extends PlexusJUnit5TestCase {
 
     final Settings projectSettings = merge(pSettings);
 
-    assertNull(projectSettings.getLocalRepository());
+    assertEquals("fake-dir", projectSettings.getLocalRepository());
     assertEquals(0, projectSettings.getProxies().size());
     assertEquals(1, projectSettings.getServers().size());
     assertEquals("UK", projectSettings.getServers().get(0).getId());
