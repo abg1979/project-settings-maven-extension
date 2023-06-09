@@ -1,4 +1,4 @@
-package com.github.gzm55.sisu.plexus;
+package io.github.abg1979.sisu.plexus;
 
 import java.io.File;
 import java.io.InputStream;

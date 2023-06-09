@@ -1,15 +1,14 @@
-package com.github.gzm55.maven.settings.building;
+package io.github.abg1979.maven.settings.building;
 
 import static org.apache.maven.cli.MavenCli.MULTIMODULE_PROJECT_DIRECTORY;
 import static org.junit.jupiter.api.Assertions.*;
 
-import com.github.gzm55.sisu.plexus.PlexusJUnit5TestCase;
+import io.github.abg1979.sisu.plexus.PlexusJUnit5TestCase;
 import java.io.File;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Properties;
 
-import io.github.abg1979.maven.settings.building.ProjectSettingsInjector;
 import org.apache.maven.eventspy.EventSpy;
 import org.apache.maven.settings.Settings;
 import org.apache.maven.settings.building.*;

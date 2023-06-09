@@ -1,8 +1,8 @@
-package com.github.gzm55.maven.settings.merge;
+package io.github.abg1979.maven.settings.merge;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-import com.github.gzm55.sisu.plexus.PlexusJUnit5TestCase;
+import io.github.abg1979.sisu.plexus.PlexusJUnit5TestCase;
 import java.io.ByteArrayInputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.Collections;
