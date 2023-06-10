@@ -27,7 +27,7 @@ jobs:
           cache: maven
 
       - name: import-gpg-key
-        uses: crazy-max/ghaction-import-gpg@v3
+        uses: crazy-max/ghaction-import-gpg@v5
         with:
           key: ${{ secrets.GPG_KEY }}
           passphrase: ${{ secrets.GPG_PASS_PHRASE }}
