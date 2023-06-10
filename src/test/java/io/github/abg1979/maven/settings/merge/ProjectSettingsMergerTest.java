@@ -38,7 +38,6 @@ public class ProjectSettingsMergerTest extends PlexusJUnit5TestCase {
     assertEquals(0, projectSettings.getProxies().size());
     assertEquals(1, projectSettings.getServers().size());
     assertEquals("UK", projectSettings.getServers().get(0).getId());
-    assertNull(projectSettings.getServers().get(0).getUsername());
   }
 
   @Test

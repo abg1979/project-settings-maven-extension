@@ -225,7 +225,7 @@
                             <goal>sign</goal>
                         </goals>
                         <configuration>
-                            <keyname>71BD91AAE6DFCD61C13A5FE8BC275D607D794299</keyname>
+                            <keyname>9264C1BCCD978115F6B6C1E33FEE1FCDACC73225</keyname>
                         </configuration>
                     </execution>
                 </executions>
