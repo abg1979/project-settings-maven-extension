@@ -26,5 +26,15 @@ jobs:
           distribution: 'temurin'
           cache: maven
 
+      - name: import-gpg-key
+        uses: crazy-max/ghaction-import-gpg@v3
+        with:
+          key: ${{ secrets.GPG_KEY }}
+          passphrase: ${{ secrets.GPG_PASS_PHRASE }}
+          trust_level: 5
+
+      - name: list-gpg-secret-keys
+        run: gpg --list-secret-keys --keyid-format=long
+
       - name: Build and verify
         run: ./mvnw verify --batch-mode --no-transfer-progress --errors
