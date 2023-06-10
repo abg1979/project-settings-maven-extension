@@ -26,6 +26,11 @@ jobs:
       - name: list-gpg-secret-keys
         run: gpg --list-secret-keys --keyid-format=long
 
+      - name: Configure Git user
+        run: |
+          git config user.email "actions@github.com"
+          git config user.name "GitHub Actions"
+
       - name: Publish package
         run: mvn --no-transfer-progress --batch-mode release:prepare release:perform
         env:
