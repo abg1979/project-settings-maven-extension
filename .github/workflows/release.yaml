@@ -29,8 +29,13 @@ jobs:
 
       - name: Configure Git user
         run: |
-          git config user.email "actions@github.com"
+          git config user.email "oss@carbonbulls.com"
           git config user.name "GitHub Actions"
+
+      - name: Install SSH Key
+        uses: shimataro/ssh-key-action@v2.5.1
+        with:
+          key: ${{ secrets.DEPLOY_SSH_PRIVATE_KEY }}
 
       - name: Publish package
         run: mvn --no-transfer-progress --batch-mode release:prepare release:perform
