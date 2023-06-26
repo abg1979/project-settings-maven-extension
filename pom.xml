@@ -29,6 +29,10 @@
             <organization>Black App Solutions</organization>
             <organizationUrl>https://black-app-solutions.de</organizationUrl>
         </developer>
+        <developer>
+            <name>Abhishek Gupta</name>
+            <email>oss@carbonbulls.com</email>
+        </developer>
     </developers>
 
     <scm>
