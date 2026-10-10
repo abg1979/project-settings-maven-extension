@@ -16,6 +16,7 @@ import org.apache.maven.settings.TrackableBase;
 import org.apache.maven.settings.io.DefaultSettingsReader;
 import org.apache.maven.settings.io.SettingsReader;
 import org.codehaus.plexus.util.xml.Xpp3Dom;
+import org.codehaus.plexus.logging.Logger;
 import org.junit.jupiter.api.Test;
 
 /** Tests {@code ProjectSettingsMerger}. */
@@ -99,14 +100,16 @@ public class ProjectSettingsMergerTest extends PlexusJUnit5TestCase {
 
   Settings merge(final String projectSettings) throws Exception {
     final Settings result = settingsFromString(projectSettings);
-    new ProjectSettingsMerger().merge(result, new Settings(), TrackableBase.USER_LEVEL);
+    new ProjectSettingsMerger(lookup(Logger.class))
+        .merge(result, new Settings(), TrackableBase.USER_LEVEL);
     return result;
   }
 
   Settings merge(final String projectSettings, final String anotherString) throws Exception {
     final Settings result = settingsFromString(projectSettings);
     final Settings another = settingsFromString(anotherString);
-    new ProjectSettingsMerger().merge(result, another, TrackableBase.USER_LEVEL);
+    new ProjectSettingsMerger(lookup(Logger.class))
+        .merge(result, another, TrackableBase.USER_LEVEL);
     return result;
   }
 }

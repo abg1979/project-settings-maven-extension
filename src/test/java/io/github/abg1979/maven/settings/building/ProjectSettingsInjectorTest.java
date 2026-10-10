@@ -5,6 +5,8 @@ import static org.junit.jupiter.api.Assertions.*;
 
 import io.github.abg1979.sisu.plexus.PlexusJUnit5TestCase;
 import java.io.File;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Properties;
@@ -17,6 +19,7 @@ import org.apache.maven.settings.io.SettingsReader;
 import org.codehaus.plexus.ContainerConfiguration;
 import org.codehaus.plexus.PlexusConstants;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
 /** Tests {@code ProjectSettingsInjector}. */
 public class ProjectSettingsInjectorTest extends PlexusJUnit5TestCase {
@@ -91,7 +94,7 @@ public class ProjectSettingsInjectorTest extends PlexusJUnit5TestCase {
 
     assertNull(request.getUserSettingsFile());
     assertNotNull(request.getUserSettingsSource());
-    assertTrue(request.getUserSettingsSource() instanceof StringSettingsSource);
+    assertTrue(request.getUserSettingsSource() instanceof SettingsSource);
     assertNull(request.getGlobalSettingsFile());
     assertNull(request.getGlobalSettingsSource());
 
@@ -119,7 +122,7 @@ public class ProjectSettingsInjectorTest extends PlexusJUnit5TestCase {
 
     assertNull(request.getUserSettingsFile());
     assertNotNull(request.getUserSettingsSource());
-    assertTrue(request.getUserSettingsSource() instanceof StringSettingsSource);
+    assertTrue(request.getUserSettingsSource() instanceof SettingsSource);
     assertNull(request.getGlobalSettingsFile());
     assertNull(request.getGlobalSettingsSource());
 
@@ -152,7 +155,7 @@ public class ProjectSettingsInjectorTest extends PlexusJUnit5TestCase {
     assertNull(request.getUserSettingsSource());
     assertNull(request.getGlobalSettingsFile());
     assertNotNull(request.getGlobalSettingsSource());
-    assertTrue(request.getGlobalSettingsSource() instanceof StringSettingsSource);
+    assertTrue(request.getGlobalSettingsSource() instanceof SettingsSource);
 
     Map<String, ?> options = Collections.singletonMap(SettingsReader.IS_STRICT, Boolean.FALSE);
     Settings settings =
@@ -184,7 +187,7 @@ public class ProjectSettingsInjectorTest extends PlexusJUnit5TestCase {
 
     assertNull(request.getUserSettingsFile());
     assertNotNull(request.getUserSettingsSource());
-    assertTrue(request.getUserSettingsSource() instanceof StringSettingsSource);
+    assertTrue(request.getUserSettingsSource() instanceof SettingsSource);
     assertNull(request.getGlobalSettingsFile());
     assertTrue(request.getGlobalSettingsSource() instanceof StringSettingsSource);
     assertEquals(
@@ -229,5 +232,31 @@ public class ProjectSettingsInjectorTest extends PlexusJUnit5TestCase {
     assertNull(request.getUserSettingsSource());
     assertNull(request.getGlobalSettingsFile());
     assertNull(request.getGlobalSettingsSource());
+  }
+
+  @Test
+  void testDumpMergedSettingsIsOptIn(@TempDir Path tempDir) throws Exception {
+    Path disabledProject = tempDir.resolve("disabled");
+    Path disabledSettingsDirectory = Files.createDirectories(disabledProject.resolve(".mvn"));
+    Files.writeString(disabledSettingsDirectory.resolve("settings.xml"), "<settings/>");
+
+    Properties disabledProperties = new Properties();
+    disabledProperties.setProperty(MULTIMODULE_PROJECT_DIRECTORY, disabledProject.toString());
+    SettingsBuildingRequest disabledRequest =
+        new DefaultSettingsBuildingRequest().setSystemProperties(disabledProperties);
+    lookup(EventSpy.class, "project-settings").onEvent(disabledRequest);
+    assertFalse(Files.exists(disabledSettingsDirectory.resolve("merged-settings.xml")));
+
+    Path enabledProject = tempDir.resolve("enabled");
+    Path enabledSettingsDirectory = Files.createDirectories(enabledProject.resolve(".mvn"));
+    Files.writeString(enabledSettingsDirectory.resolve("settings.xml"), "<settings/>");
+
+    Properties enabledProperties = new Properties();
+    enabledProperties.setProperty(MULTIMODULE_PROJECT_DIRECTORY, enabledProject.toString());
+    enabledProperties.setProperty(ProjectSettingsInjector.PROJECT_SETTINGS_DUMP_KEY, "true");
+    SettingsBuildingRequest enabledRequest =
+        new DefaultSettingsBuildingRequest().setSystemProperties(enabledProperties);
+    lookup(EventSpy.class, "project-settings").onEvent(enabledRequest);
+    assertTrue(Files.exists(enabledSettingsDirectory.resolve("merged-settings.xml")));
   }
 }

@@ -36,20 +36,10 @@ Some fields should be controlled only by the user, not any project, so they are 
 * usePluginRegistry
 * proxies
 
-## Detect parent poms from custom repositories by IDE
-
-When specify non-central repositories via project settings from which the parent poms are downloaded,
-the IDE, e.g. Intellij, may not import the maven project cleanly, complaining that the parent poms
-cannot be got from the central repository, while the maven targets, such as clean, compile and verify
-can still be built correctly. To solve this inconvenience, from `0.2.3` this extension try to
-mimic the downloaded parent poms are installed locally, by deleting some flag files in `.m2/repository`.
-That is, after importing projects, just click any maven target, e.g. `clean`.
-When the target successes, the IDE should understand the projects.
-
 ## Property switch
 
 - `skipProjectSettings`, a boolean property to skip loading the project settings.
-- `skipIdeIntegration`, a boolean property, if true, the extension will disable the feature for IDE scanning the parent poms from custom repositories.
+- `projectSettings.dumpMergedSettings`, a boolean property that writes merged settings to `.mvn/merged-settings.xml` when set to `true`. The dump may contain credentials; do not commit it.
 
 ## Release Flow
 

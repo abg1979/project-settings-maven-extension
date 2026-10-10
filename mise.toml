@@ -1,0 +1,17 @@
+
+[env]
+# supports arbitrary env vars so mise can be used like direnv/dotenv
+PROJECT_NAME = "{{ config_root | basename }}"
+_.fnox-env = { tools = true }
+
+[tools]
+java = "21"
+maven = "3.9"
+fnox = "latest"
+
+[tasks.build]
+description = "Build the project"
+run = 'mvn clean verify'
+
+[plugins]
+fnox-env = "https://github.com/jdx/mise-env-fnox"

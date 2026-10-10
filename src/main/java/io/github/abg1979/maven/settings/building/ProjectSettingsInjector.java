@@ -2,6 +2,7 @@ package io.github.abg1979.maven.settings.building;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -13,24 +14,18 @@ import javax.inject.Named;
 
 import org.apache.maven.building.FileSource;
 import org.apache.maven.building.Source;
+import org.apache.maven.building.StringSource;
 import org.apache.maven.cli.MavenCli;
 import org.apache.maven.eventspy.AbstractEventSpy;
-import org.apache.maven.execution.MavenExecutionRequest;
-import org.apache.maven.execution.MavenExecutionResult;
-import org.apache.maven.project.MavenProject;
 import org.apache.maven.settings.Settings;
 import org.apache.maven.settings.TrackableBase;
-import org.apache.maven.settings.building.DefaultSettingsProblem;
-import org.apache.maven.settings.building.SettingsBuildingException;
-import org.apache.maven.settings.building.SettingsBuildingRequest;
-import org.apache.maven.settings.building.SettingsBuildingResult;
-import org.apache.maven.settings.building.SettingsProblem;
-import org.apache.maven.settings.building.SettingsProblemCollector;
+import org.apache.maven.settings.building.*;
 import org.apache.maven.settings.io.SettingsParseException;
 import org.apache.maven.settings.io.SettingsReader;
 import org.apache.maven.settings.io.SettingsWriter;
 import org.apache.maven.settings.validation.SettingsValidator;
 import org.codehaus.plexus.logging.Logger;
+import org.jspecify.annotations.NonNull;
 
 /**
  * Spy the SettingsBuildingRequest to inject project settings. This is a fast implemention, a better
@@ -51,119 +46,30 @@ public class ProjectSettingsInjector extends AbstractEventSpy {
     @Inject
     private SettingsValidator settingsValidator;
 
-    private ProjectSettingsMerger settingsMerger = new ProjectSettingsMerger();
+    private ProjectSettingsMerger settingsMerger;
 
     private static final String PROJECT_SETTINGS_FILENAME = ".mvn/settings.xml";
     public static final String PROJECT_SETTINGS_SKIP_KEY = "skipProjectSettings";
-    private static final String IDEA_VERSION_1 = "idea.version";
-    private static final String IDEA_VERSION_2 = "idea.maven.embedder.version";
-    private static final String IDEA_VERSION_3 = "idea.version2020.1.1";
-    private static final String SKIP_IDE_INTEGRATION_KEY = "skipIdeIntegration";
+    public static final String PROJECT_SETTINGS_DUMP_KEY = "projectSettings.dumpMergedSettings";
 
     private List<SettingsProblem> injectingProblems;
-    private boolean inIde = false;
-    private boolean skipIdeIntegration = false;
-    private String localRepo = null;
 
     @Override
     public void onEvent(final Object event) throws SettingsBuildingException {
-        if (event instanceof SettingsBuildingResult && null != injectingProblems) {
+        if (event instanceof SettingsBuildingResult settingsBuildingResult && null != injectingProblems) {
             // Assuming the SettingsBuilding{Request,Result} events will be dispatched in paired order.
-            ((SettingsBuildingResult) event).getProblems().addAll(0, injectingProblems);
+            settingsBuildingResult.getProblems().addAll(0, injectingProblems);
             injectingProblems = null;
             return;
-        } else if (event instanceof MavenExecutionRequest) {
-            final MavenExecutionRequest mavenExecutionRequest = (MavenExecutionRequest) event;
-            final Properties sysProps = mavenExecutionRequest.getSystemProperties();
-            inIde =
-                    sysProps.containsKey(IDEA_VERSION_1)
-                            || sysProps.containsKey(IDEA_VERSION_2)
-                            || sysProps.containsKey(IDEA_VERSION_3);
-            skipIdeIntegration = sysProps.containsKey(skipIdeIntegration);
-            return;
-        } else if (event instanceof MavenExecutionResult
-                && inIde
-                && !skipIdeIntegration
-                && null != localRepo) {
-            final MavenExecutionResult mavenExecutionResult = (MavenExecutionResult) event;
-            if (mavenExecutionResult.hasExceptions()) {
-                return;
-            }
-
-            logger.debug("Make IDE to identify the parent poms downloaded from custom repositories.");
-
-            for (final MavenProject p : mavenExecutionResult.getTopologicallySortedProjects()) {
-                MavenProject parent = null;
-                for (parent = p.getParent(); null != parent; parent = parent.getParent()) {
-                    if (null == parent.getFile()) {
-                        // parent is not a local pom file
-
-                        // remove '_remote.repositories' file to mimic local installed artifact
-                        final String flagFileRelPath =
-                                parent.getGroupId().replace('.', File.separatorChar)
-                                        + File.separatorChar
-                                        + parent.getArtifactId()
-                                        + File.separatorChar
-                                        + parent.getVersion()
-                                        + File.separatorChar
-                                        + "_remote.repositories";
-                        final File internalFlagFile = new File(localRepo, flagFileRelPath);
-                        if (internalFlagFile.exists()) {
-                            try {
-                                if (internalFlagFile.delete()) {
-                                    if (logger.isDebugEnabled()) {
-                                        logger.debug("Remove _remote.repositories: " + internalFlagFile.getPath());
-                                    }
-                                } else {
-                                    logger.warn("Failed to remove " + internalFlagFile.getPath());
-                                }
-                            } catch (final SecurityException exception) {
-                                logger.warn("Unable to remove " + internalFlagFile.getPath() + ". {}", exception);
-                            }
-                        }
-
-                        // remove '*.lastUpdated' file to clean the local cached status
-                        final String statusFileRelPath =
-                                parent.getGroupId().replace('.', File.separatorChar)
-                                        + File.separatorChar
-                                        + parent.getArtifactId()
-                                        + File.separatorChar
-                                        + parent.getVersion()
-                                        + File.separatorChar
-                                        + parent.getArtifactId()
-                                        + "-"
-                                        + parent.getVersion()
-                                        + ".pom.lastUpdated";
-                        final File internalStatusFile = new File(localRepo, statusFileRelPath);
-                        if (internalStatusFile.exists()) {
-                            try {
-                                if (internalStatusFile.delete()) {
-                                    if (logger.isDebugEnabled()) {
-                                        logger.debug("Remove _remote.repositories: " + internalStatusFile.getPath());
-                                    }
-                                } else {
-                                    logger.warn("Failed to remove " + internalStatusFile.getPath());
-                                }
-                            } catch (final SecurityException exception) {
-                                logger.warn("Unable to remove " + internalStatusFile.getPath() + ". {}", exception);
-                            }
-                        }
-                    }
-                }
-            }
-
-            return;
         } else if (!(event instanceof SettingsBuildingRequest)) {
-            // droping all irrelevant events
+            // dropping all irrelevant events
             return;
         }
-
+        settingsMerger = new ProjectSettingsMerger(logger);
         final SettingsBuildingRequest request = (SettingsBuildingRequest) event;
 
         if (Boolean.parseBoolean(getProperty(request, PROJECT_SETTINGS_SKIP_KEY, "false"))) {
-            if (logger.isDebugEnabled()) {
-                logger.debug("Skip loading project settings.");
-            }
+            logger.warn("Skip loading project settings.");
             return;
         }
 
@@ -171,12 +77,10 @@ public class ProjectSettingsInjector extends AbstractEventSpy {
                 getProperty(request.getSystemProperties(), MavenCli.MULTIMODULE_PROJECT_DIRECTORY);
 
         if (null == multiModuleProjectDirectory) {
-            if (logger.isDebugEnabled()) {
-                logger.debug(
-                        "property "
-                                + MavenCli.MULTIMODULE_PROJECT_DIRECTORY
-                                + " is not set while searching project settings.xml.");
-            }
+            logger.debug(
+                    "property "
+                            + MavenCli.MULTIMODULE_PROJECT_DIRECTORY
+                            + " is not set while searching project settings.xml.");
             return;
         }
 
@@ -184,40 +88,55 @@ public class ProjectSettingsInjector extends AbstractEventSpy {
                 new File(multiModuleProjectDirectory, PROJECT_SETTINGS_FILENAME);
 
         if (!projectSettingsFile.exists()) {
+            logger.debug(
+                    "Project settings file "
+                            + projectSettingsFile.getPath()
+                            + " does not exist, skip loading project settings.");
             return;
         }
 
-        final List<SettingsProblem> problems = new ArrayList<SettingsProblem>();
+        final List<SettingsProblem> problems = new ArrayList<>();
 
-        if (logger.isDebugEnabled()) {
-            logger.debug("Reading project settings from " + projectSettingsFile.getPath());
-        }
-        final Source projectSettingsSource = getSettingsSource(projectSettingsFile, null);
+        logger.info("Reading project settings from " + projectSettingsFile.getPath());
+        final Source projectSettingsSource = new FileSource(projectSettingsFile);
         final Settings projectSettings = readSettings(projectSettingsSource, problems);
 
-        final Source globalSettingsSource =
-                getSettingsSource(request.getGlobalSettingsFile(), request.getGlobalSettingsSource());
-        final Source userSettingsSource =
-                getSettingsSource(request.getUserSettingsFile(), request.getUserSettingsSource());
+        final Source globalSettingsSource = getSettingsSource(SettingType.GLOBAL, request);
+        final Source userSettingsSource = getSettingsSource(SettingType.USER, request);
 
-        final Source injectSource =
-                null != userSettingsSource ? userSettingsSource : globalSettingsSource;
+        // use user settings if it exists, otherwise use global settings
+        SettingType injectType =
+                null != userSettingsSource || null == globalSettingsSource
+                        ? SettingType.USER
+                        : SettingType.GLOBAL;
+        final Source injectSource = injectType == SettingType.USER ? userSettingsSource : globalSettingsSource;
 
         final Settings injectSettings = readSettings(injectSource, problems);
         settingsMerger.merge(projectSettings, injectSettings, TrackableBase.USER_LEVEL);
+        String location = generateLocationDescription(projectSettingsSource, injectSource);
+        final StringSource resultSource = writeSettings(projectSettings, location);
 
-        @SuppressWarnings("deprecation") final org.apache.maven.settings.building.SettingsSource resultSource =
-                writeSettings(
-                        projectSettings,
-                        "memory(:"
-                                + projectSettingsSource.getLocation()
-                                + (null == injectSource ? "" : ":" + injectSource.getLocation())
-                                + ")");
+        // let us write the merged settings to logger for debug purpose
+        if (logger.isDebugEnabled()) {
+            logger.debug("Project settings merged into " + injectType + " settings from " + location);
+            logger.debug("Merged settings:\n" + resultSource.getContent());
+        }
 
-        if (null == injectSource || null != userSettingsSource) {
-            request.setUserSettingsFile(null).setUserSettingsSource(resultSource);
+        if (Boolean.parseBoolean(getProperty(request, PROJECT_SETTINGS_DUMP_KEY, "false"))) {
+            // write to file for debug purpose
+            try {
+                File debugFile = new File(projectSettingsFile.getParentFile(), "merged-settings.xml");
+                settingsWriter.write(debugFile, null, projectSettings);
+                logger.debug("Merged settings written to " + debugFile.getPath());
+            } catch (IOException e) {
+                logger.warn("Failed to write merged settings to file: " + e.getMessage(), e);
+            }
+        }
+
+        if (injectType == SettingType.USER) {
+            request.setUserSettingsFile(null).setUserSettingsSource(wrap(resultSource));
         } else {
-            request.setGlobalSettingsFile(null).setGlobalSettingsSource(resultSource);
+            request.setGlobalSettingsFile(null).setGlobalSettingsSource(wrap(resultSource));
         }
 
         for (final SettingsProblem problem : problems) {
@@ -226,74 +145,93 @@ public class ProjectSettingsInjector extends AbstractEventSpy {
             }
         }
 
-        // save warning problems, insert back on the SettingsBuildingResult event
+        // to save warning problems, insert back on the SettingsBuildingResult event
         injectingProblems = problems.isEmpty() ? null : problems;
-
-        localRepo = projectSettings.getLocalRepository();
-        if (null == localRepo) {
-            localRepo =
-                    getProperty(request.getSystemProperties(), "user.home")
-                            + File.separatorChar
-                            + ".m2"
-                            + File.separatorChar
-                            + "repository";
-        }
     }
 
-    private Source getSettingsSource(final File settingsFile, final Source settingsSource) {
-        if (null != settingsSource) {
+    @SuppressWarnings("deprecation")
+    private SettingsSource wrap(Source source) {
+        if (source instanceof SettingsSource settingsSource) {
             return settingsSource;
-        } else if (null != settingsFile && settingsFile.exists()) {
-            return new FileSource(settingsFile);
+        }
+        return new SettingsSource() {
+            @Override
+            public InputStream getInputStream() throws IOException {
+                return source.getInputStream();
+            }
+
+            @Override
+            public String getLocation() {
+                return source.getLocation();
+            }
+        };
+    }
+
+    private static @NonNull String generateLocationDescription(Source projectSettingsSource, Source injectSource) {
+        String location = "memory(" + projectSettingsSource.getLocation();
+        if (null != injectSource) {
+            location += ":" + injectSource.getLocation();
+        }
+        location += ")";
+        return location;
+    }
+
+    private enum SettingType {
+        USER, GLOBAL
+    }
+    private Source getSettingsSource(SettingType type, SettingsBuildingRequest request) {
+        if (type == SettingType.USER) {
+            if (null != request.getUserSettingsSource()) {
+                return request.getUserSettingsSource();
+            } else if (null != request.getUserSettingsFile() && request.getUserSettingsFile().exists()) {
+                return new FileSource(request.getUserSettingsFile());
+            }
+        }
+        if (type == SettingType.GLOBAL) {
+            if (null != request.getGlobalSettingsSource()) {
+                return request.getGlobalSettingsSource();
+            } else if (null != request.getGlobalSettingsFile() && request.getGlobalSettingsFile().exists()) {
+                return new FileSource(request.getGlobalSettingsFile());
+            }
         }
         return null;
     }
 
+    private Settings readSettingsAndCollectSettingsErrors(Source settingsSource, SettingsProblemCollector problems, boolean strict) throws IOException {
+        final Map<String, ?> options = Collections.singletonMap(SettingsReader.IS_STRICT, strict);
+        try {
+            return settingsReader.read(settingsSource.getInputStream(), options);
+        } catch (final SettingsParseException err) {
+            SettingsProblem.Severity severity = strict ? SettingsProblem.Severity.FATAL : SettingsProblem.Severity.WARNING;
+            problems.add(
+                    severity,
+                    "Non-parseable settings " + settingsSource.getLocation() + ": " + err.getMessage(),
+                    err.getLineNumber(),
+                    err.getColumnNumber(),
+                    err);
+            return null;
+        }
+    }
     private Settings readSettings(final Source settingsSource, final List<SettingsProblem> problems) {
         if (settingsSource == null) {
             return new Settings();
         }
 
         final SettingsProblemCollector problemsAdder =
-                new SettingsProblemCollector() {
-                    @Override
-                    public void add(
-                            final SettingsProblem.Severity severity,
-                            final String message,
-                            int line,
-                            int col,
-                            final Exception cause) {
-                        if (line <= 0 && col <= 0 && cause instanceof SettingsParseException) {
-                            final SettingsParseException e = (SettingsParseException) cause;
-                            line = e.getLineNumber();
-                            col = e.getColumnNumber();
-                        }
-                        problems.add(
-                                new DefaultSettingsProblem(
-                                        message, severity, settingsSource.getLocation(), line, col, cause));
+                (severity, message, line, col, cause) -> {
+                    if (line <= 0 && col <= 0 && cause instanceof SettingsParseException e) {
+                        line = e.getLineNumber();
+                        col = e.getColumnNumber();
                     }
+                    problems.add(
+                            new DefaultSettingsProblem(
+                                    message, severity, settingsSource.getLocation(), line, col, cause));
                 };
 
-        Settings settings;
-
+        Settings settings = null;
+        // Strict mode is used to detect invalid settings, but we still want to read them in non-strict mode
         try {
-            Map<String, ?> options = Collections.singletonMap(SettingsReader.IS_STRICT, Boolean.TRUE);
-
-            try {
-                settings = settingsReader.read(settingsSource.getInputStream(), options);
-            } catch (final SettingsParseException err) {
-                options = Collections.singletonMap(SettingsReader.IS_STRICT, Boolean.FALSE);
-                settings = settingsReader.read(settingsSource.getInputStream(), options);
-                problemsAdder.add(SettingsProblem.Severity.WARNING, err.getMessage(), 0, 0, err);
-            }
-        } catch (final SettingsParseException err) {
-            problemsAdder.add(
-                    SettingsProblem.Severity.FATAL,
-                    "Non-parseable settings " + settingsSource.getLocation() + ": " + err.getMessage(),
-                    0,
-                    0,
-                    err);
-            return new Settings();
+            settings = readSettingsAndCollectSettingsErrors(settingsSource, problemsAdder, true);
         } catch (final IOException err) {
             problemsAdder.add(
                     SettingsProblem.Severity.FATAL,
@@ -301,7 +239,22 @@ public class ProjectSettingsInjector extends AbstractEventSpy {
                     -1,
                     -1,
                     err);
+            // we cannot retry io errors, so return empty settings
             return new Settings();
+        }
+        // if strict mode failed, try to read in non-strict mode to get as much settings as possible
+        if (settings == null) {
+            try {
+                settings = readSettingsAndCollectSettingsErrors(settingsSource, problemsAdder, false);
+            } catch (final IOException err) {
+                problemsAdder.add(
+                        SettingsProblem.Severity.FATAL,
+                        "Non-parseable settings " + settingsSource.getLocation() + ": " + err.getMessage(),
+                        0,
+                        0,
+                        err);
+                return new Settings();
+            }
         }
 
         settingsValidator.validate(settings, problemsAdder);
@@ -309,15 +262,11 @@ public class ProjectSettingsInjector extends AbstractEventSpy {
         return settings;
     }
 
-    @SuppressWarnings("deprecation")
-    private org.apache.maven.settings.building.StringSettingsSource writeSettings(
-            final Settings settings, final String location) {
+    private StringSource writeSettings(final Settings settings, final String location) {
         final StringWriter writer = new StringWriter(1024 * 4);
-
         try {
             settingsWriter.write(writer, null, settings);
-            return new org.apache.maven.settings.building.StringSettingsSource(
-                    writer.toString(), location);
+            return new StringSource(writer.toString(), location);
         } catch (final IOException err) {
             throw new IllegalStateException("Failed to serialize settings to memory", err);
         }
