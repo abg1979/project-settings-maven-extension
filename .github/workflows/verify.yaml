@@ -3,7 +3,6 @@ name: Verify
 # trigger on push to branches and PR
 on:
   push:
-    branch:
   pull_request:
 
 jobs:
@@ -26,6 +25,12 @@ jobs:
           distribution: 'temurin'
           cache: maven
 
+      - name: Set up Maven
+        uses: jdx/mise-action@v4
+        with:
+          install_args: maven@
+          env: false
+
       - name: import-gpg-key
         uses: crazy-max/ghaction-import-gpg@v5
         with:
@@ -37,4 +42,4 @@ jobs:
         run: gpg --list-secret-keys --keyid-format=long
 
       - name: Build and verify
-        run: ./mvnw verify --batch-mode --no-transfer-progress --errors
+        run: mvn verify --batch-mode --no-transfer-progress --errors

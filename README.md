@@ -1,53 +1,56 @@
-# project-settings-extension
+# Project Settings Maven Extension
 
-This maven extension could load .mvn/settings.xml as project settings, and merge it into effective setting.
+This Maven core extension loads project-specific settings from `.mvn/settings.xml` and merges them with Maven's user or global settings. Maven does not load `.mvn/settings.xml` by itself.
 
-Maven originally only takes two configurations, user (`${user.home}/.m2/settings.xml`) and global (`${maven.home}/conf/settings.xml`). When we developing multiply projects from multiply organizations, the configurations may conflict, and are hard to manage (edit manually or some switch scripts). Another problem is when using some corp maven repositories or mirros for bootstraping the team common parent poms or plugins, the developers have to do some setup actions. But the projects should be `./mvnw verify`-ed immediately after the code is fully checked out.
+Project settings are useful when a project needs custom repositories, mirrors, or other Maven settings. They let contributors build the project without manually modifying their personal `settings.xml`.
 
-Since Maven 3.3.1, we have another way to cooperate with maven, that is core extensions defined in `${project.basedir}/.mvn/extensions.xml`. Put this extension in this new config file, then when building the maven will load the project level settings from `${project.basedir}/.mvn/settings.xml`, and you can easily solve the above ploblems.
+## Enable the extension
 
-## Example
+Create `.mvn/extensions.xml` at the top level of the project:
 
 ```xml
 <extensions xmlns="http://maven.apache.org/EXTENSIONS/1.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xsi:schemaLocation="http://maven.apache.org/EXTENSIONS/1.0.0 http://maven.apache.org/xsd/core-extensions-1.0.0.xsd">
   <extension>
-    <groupId>com.github.abg1979.maven</groupId>
+    <groupId>io.github.abg1979.maven</groupId>
     <artifactId>project-settings-extension</artifactId>
-    <version>0.2.3</version>
+    <version>0.3.1</version>
   </extension>
 </extensions>
 ```
 
-## Merge Order
+Then place project settings in `.mvn/settings.xml` at the same project root. For multi-module builds, the extension uses the Maven multi-module project directory.
 
-* project level `${maven.multiModuleProjectDirectory}/.mvn/settings.xml` (Highest priority)
-* user level `${user.home}/.m2/settings.xml` (Medium priority)
-* global level `${maven.home}/conf/settings.xml` (Low priority)
+Because Maven loads core extensions before it reads project settings, `.mvn/settings.xml` cannot configure a repository needed to download this extension itself. Configure that repository through Maven's existing user or global settings.
 
-This order is widely used in many projects such as git.
+## Settings merge behavior
 
-## Special fields in projects settings
+The project settings have the highest priority, followed by user settings and then global settings. Some values remain controlled by the user's local configuration:
 
-Some fields should be controlled only by the user, not any project, so they are always ignored and copied back from user or global level settings:
+- `localRepository` uses the project value when set; otherwise, it falls back to the user or global value.
+- `interactiveMode`, `offline`, and `usePluginRegistry` come from user or global settings.
+- Project proxies are ignored in favor of user or global proxies.
+- For matching server IDs, credentials and other local-only fields come from user or global settings.
 
-* interactiveMode
-* offline
-* usePluginRegistry
-* proxies
+## Properties
 
-## Property switch
+- `skipProjectSettings`: set to `true` to skip loading project settings, for example `mvn -DskipProjectSettings=true verify`.
+- `projectSettings.dumpMergedSettings`: set to `true` to write the merged settings to `.mvn/merged-settings.xml`, for example `mvn -DprojectSettings.dumpMergedSettings=true verify`. The file may contain credentials; do not commit it.
 
-- `skipProjectSettings`, a boolean property to skip loading the project settings.
-- `projectSettings.dumpMergedSettings`, a boolean property that writes merged settings to `.mvn/merged-settings.xml` when set to `true`. The dump may contain credentials; do not commit it.
+## Build
 
-## Release Flow
+Building this project requires JDK 21 and Maven 3.6.3 or later. The extension targets Java 17 bytecode.
 
-* `./mvnw install`, pass all ut/it, no warnings
-* `./mvnw clean release:clean release:prepare`
-* `git pull`
-* `./mvnw clean release:clean`
+```sh
+mvn clean verify
+```
 
-## Known issue
+The `mise.toml` file provides pinned Java and Maven versions and a `build` task (`mise install && mise run build`). GitHub Actions uses the Maven version from this file; `setup-java` selects JDK 21.
 
-Project settings can not bootstrap loading core extensions. See [MNG-6392](https://issues.apache.org/jira/browse/MNG-6392).
+## Release
+
+The GitHub Actions release workflow runs the Maven Release Plugin to prepare and publish releases.
+
+## Known limitation
+
+Project settings cannot bootstrap loading core extensions. See [MNG-6392](https://issues.apache.org/jira/browse/MNG-6392).
