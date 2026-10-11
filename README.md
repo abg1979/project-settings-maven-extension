@@ -57,9 +57,9 @@ Configure these GitHub Actions repository secrets:
 - `GPG_KEY` and `GPG_PASS_PHRASE`: the signing key and its passphrase.
 - `DEPLOY_SSH_PRIVATE_KEY` and `DEPLOY_KNOWN_HOSTS`: SSH access for Maven Release Plugin commits and tags.
 
-The workflow uses the existing OSSRH-named secrets for Portal authentication. It does not create GitHub Release objects.
+To test the Portal credentials without preparing a release or uploading artifacts, manually run the **Validate Central Publisher credentials** workflow from `master`. It makes a read-only request and reports only the HTTP status. A successful response confirms API authentication, but not publication permission for the project's namespace. The release workflow uses the existing OSSRH-named secrets and does not create GitHub Release objects.
 
-Maven Central release versions are immutable. If `release:prepare` has pushed a tag but `release:perform` fails, the workflow does not retry that tag; leave it untouched and use the next available development version. The failed `0.3.2` tag remains unpublished; the current release line starts at `0.3.3-SNAPSHOT`.
+Maven Central release versions are immutable. If `release:prepare` has pushed a tag but `release:perform` fails, the workflow does not retry that tag; leave it untouched and use the next available development version. The failed `0.3.2`, `0.3.3`, and `0.3.4` tags remain unpublished; the current release line starts at `0.3.5-SNAPSHOT`.
 
 The verification workflow signs artifacts as well. GitHub withholds repository secrets from fork pull requests, so those runs may fail during GPG setup or signing.
 
