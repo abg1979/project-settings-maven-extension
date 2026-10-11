@@ -1,21 +1,49 @@
-name: Publish package to the Maven Central Repository
+name: Publish package to Maven Central
+
 on:
-  release:
-    types: [published]
   workflow_dispatch:
+
+concurrency:
+  group: maven-central-publish
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
 jobs:
   publish:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7.0.1
-      - name: Set up Maven Central Repository
+        with:
+          fetch-depth: 0
+
+      - name: Require master branch
+        run: |
+          if [[ "$GITHUB_REF" != "refs/heads/master" ]]; then
+            echo "::error::Releases must be dispatched from master."
+            exit 1
+          fi
+
+      - name: Require current master revision
+        run: |
+          git fetch --no-tags origin master
+          if [[ "$(git rev-parse HEAD)" != "$(git rev-parse FETCH_HEAD)" ]]; then
+            echo "::error::master advanced after this run was queued. Dispatch a new release from the latest master."
+            exit 1
+          fi
+
+      - name: Set up Maven Central credentials
         uses: actions/setup-java@v6.0.1
         with:
           java-version: '21'
           distribution: 'temurin'
-          server-id: ossrh
+          server-id: central
           server-username: MAVEN_USERNAME
           server-password: MAVEN_PASSWORD
+        env:
+          MAVEN_USERNAME: ${{ secrets.OSSRH_USERNAME }}
+          MAVEN_PASSWORD: ${{ secrets.OSSRH_TOKEN }}
 
       - name: Set up Maven
         uses: jdx/mise-action@v5.1.1
@@ -23,14 +51,14 @@ jobs:
           install_args: maven@
           env: false
 
-      - name: import-gpg-key
+      - name: Import GPG key
         uses: crazy-max/ghaction-import-gpg@v7.0.0
         with:
           gpg_private_key: ${{ secrets.GPG_KEY }}
           passphrase: ${{ secrets.GPG_PASS_PHRASE }}
           trust_level: 5
 
-      - name: list-gpg-secret-keys
+      - name: List GPG secret keys
         run: gpg --list-secret-keys --keyid-format=long
 
       - name: Configure Git user
@@ -38,14 +66,14 @@ jobs:
           git config user.email "oss@carbonbulls.com"
           git config user.name "GitHub Actions"
 
-      - name: Install SSH Key
+      - name: Install SSH key
         uses: shimataro/ssh-key-action@v2.8.1
         with:
           key: ${{ secrets.DEPLOY_SSH_PRIVATE_KEY }}
           known_hosts: ${{ secrets.DEPLOY_KNOWN_HOSTS }}
 
-      - name: Publish package
+      - name: Prepare and publish release
         run: mvn --no-transfer-progress --batch-mode release:prepare release:perform
         env:
-          MAVEN_USERNAME: ${{ secrets.OSSRH_USERNAME }}
-          MAVEN_PASSWORD: ${{ secrets.OSSRH_TOKEN }}
+          CI: true
+          MAVEN_GPG_PASSPHRASE: ${{ secrets.GPG_PASS_PHRASE }}
