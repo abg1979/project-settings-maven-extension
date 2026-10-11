@@ -6,8 +6,8 @@ import java.util.Map;
 
 import org.apache.maven.settings.*;
 import org.apache.maven.settings.merge.MavenSettingsMerger;
-import org.apache.maven.shared.utils.StringUtils;
 import org.codehaus.plexus.logging.Logger;
+import org.codehaus.plexus.util.StringUtils;
 
 public class ProjectSettingsMerger extends MavenSettingsMerger {
     private final Logger logger;
@@ -52,6 +52,7 @@ public class ProjectSettingsMerger extends MavenSettingsMerger {
 
         for (final Server server : recessive.getServers()) {
             if (serverById.containsKey(server.getId())) {
+                logger.info("Overriding server configuration for id: " + server.getId());
                 final Server dominantServer = serverById.get(server.getId());
                 dominantServer.setSourceLevel(recessiveSourceLevel);
                 // prefer user level fields for local only infos
