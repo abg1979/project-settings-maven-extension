@@ -7,7 +7,7 @@
     <version>0.3.3-SNAPSHOT</version>
 
     <name>Extension for Loading project specific settings.xml</name>
-    <description>This extension could load .mvn/settings.xml as project settings, and merge it into effective setting.</description>
+    <description>This extension could load .mvn/settings.xml as project settings and merge it into effective settings.</description>
     <url>https://github.com/abg1979/project-settings-maven-extension</url>
 
     <licenses>
@@ -64,8 +64,6 @@
         <maven.compiler.testRelease>${project.buildtime-jdk.min-version}</maven.compiler.testRelease>
 
         <sort.verifyFail>STOP</sort.verifyFail>
-
-        <!--<project.scm.id>github</project.scm.id>-->
     </properties>
 
     <dependencies>
